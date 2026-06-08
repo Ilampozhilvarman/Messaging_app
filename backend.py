@@ -40,10 +40,6 @@ def create_group_chat_obj(chat_name: str, member_ids: list[ObjectId], owner_id: 
         "owner_id": owner_id
     }
 
-import time
-from agora_token_builder import RtcTokenBuilder #
-
-# Load Agora credentials
 AGORA_APP_ID = os.getenv("AGORA_APP_ID")
 AGORA_APP_CERTIFICATE = os.getenv("AGORA_APP_CERTIFICATE")
 
