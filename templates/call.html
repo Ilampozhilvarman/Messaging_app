@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Call - {{ gc_name }}</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: #fff; text-align: center; padding-top: 50px; }
+        .container { max-width: 400px; margin: 0 auto; background: #1e1e1e; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .status { font-size: 1.2rem; color: #4CAF50; margin: 20px 0; }
+        .btn-hangup { background: #ff3333; color: white; border: none; padding: 12px 30px; font-size: 1rem; border-radius: 25px; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-hangup:hover { background: #cc0000; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Calling in: {{ gc_name }}</h2>
+    <div id="status-text" class="status">Connecting to audio channels...</div>
+    <a href="/chat/{{ gc_name }}" class="btn-hangup" onclick="leaveVoiceCall()">🛑 Leave Call</a>
+</div>
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js"></script>
+
+<script>
+let rtc = {
+    localAudioTrack: null,
+    client: null
+};
+
+async function initCall() {
+    try {
+        let response = await fetch('/get-token');
+        if (!response.ok) throw new Error("Could not authorize connection.");
+        let data = await response.json();
+        rtc.client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+        await rtc.client.join(data.appId, data.channel, data.token, null);
+        rtc.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        await rtc.client.publish([rtc.localAudioTrack]);
+        document.getElementById("status-text").innerText = "🎙️ Call Connected & Active";
+        rtc.client.on("user-published", async (user, mediaType) => {
+            await rtc.client.subscribe(user, mediaType);
+            if (mediaType === "audio") {
+                user.audioTrack.play();
+            }
+        });
+        
+    } catch (err) {
+        console.error(err);
+        document.getElementById("status-text").innerText = "❌ Connection failed. Check microphone permissions.";
+        document.getElementById("status-text").style.color = "#ff3333";
+    }
+}
+
+async function leaveVoiceCall() {
+    if (rtc.localAudioTrack) {
+        rtc.localAudioTrack.stop();
+        rtc.localAudioTrack.close();
+    }
+    if (rtc.client) {
+        await rtc.client.leave();
+    }
+}
+
+window.onload = initCall;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Home</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="../static/sign_up.css" />
+  </head>
+  <body>
+    <div>
+      <h1>
+        <a href="{{ url_for('signup_page') }}">Sign Up</a>
+      </h1>
+    </div>
+    {% if error %}
+      <p style="color: red; font-weight: bold;">{{ error }}</p>
+    {% endif %}
+    <form action="/login" method="POST">
+      <h1>Log In</h1>
+      <label for="input">Username</label>
+      <input type="text" name="username" id="username"> 
+      <hr>
+      <label for="password">Password</label>
+      <input type="text" name="password" id="password">
+      <button id="submit">
+        Submit
+      </button>
+    </form>
+  </body>
+</html>

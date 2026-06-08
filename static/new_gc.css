@@ -1,0 +1,108 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background-color: black;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+input, button {
+  background-color: black;
+  border: 1px solid white;
+  color: white;
+}
+
+input {
+  font-size: 4rem;
+}
+
+button {
+  height: 10vh;
+  width: 70%;
+  cursor: pointer;
+  font-size: xx-large;
+}
+
+h1 {
+  font-size: 6rem;
+  position: relative;
+}
+
+form {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2rem;
+  border: 2px solid white;
+  padding: 2rem;
+}
+
+#back h1 a {
+  animation: shift-rainbow 4s linear infinite;
+  background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
+  background-clip: text;
+  background-size: 200% auto;
+  text-decoration: none;
+  color: transparent;
+}
+
+@keyframes shift-rainbow {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+#back {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#submit {
+  border-radius: 20px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.7s;
+}
+
+#submit::after {
+  content: "";
+  z-index: -1;
+  transform: translateZ(-1px);
+  position: absolute;
+  inset: -5px;
+  background-image: conic-gradient(from var(--angle), red, orange, yellow, green, blue, indigo, violet, red);
+  animation: spin 0.7s linear infinite;
+  border-radius: 20px;
+}
+
+#submit:hover {
+  transform: scale(1.1);
+}
+
+@property --angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes spin {
+  to {
+    --angle: 360deg;
+  }
+}
