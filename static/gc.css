@@ -161,7 +161,7 @@ button:hover, #admin:hover {
   border: 3px solid white;
 }
 
-.not-clickable {
+.non-clickable {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;

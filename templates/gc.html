@@ -27,7 +27,6 @@
             <button id="submit">&uarr;</button>
         </form>
     </div>
-
     <script>
         let msgBox = document.getElementById("messages-box");
         let inputElem = document.getElementsByTagName("input")[0];
@@ -43,10 +42,11 @@
         inputElem.oninput = function(event) {
             let val = inputElem.value;
             if (infoMode || deleteMode) {
-                if (val.startsWith("Sent by:") || val === "Delete message?" || val === "info mode" || val === "delete mode") {
+                if (val.startsWith("Sent by:") || val.startsWith("Delete message?") || val === "info mode" || val === "delete mode") {
                     return; 
                 }
             }
+
             if (val === commandKey + "back") {
                 submitBtn.classList.add("rotate");
                 submitBtn.innerHTML = "&uarr;";
@@ -58,12 +58,14 @@
                 infoMode = true;
                 deleteMode = false;
                 submitBtn.innerHTML = "🔍";
+                submitBtn.classList.add("non-clickable");
             }
             else if (val === commandKey + "delete") {
                 {% if owner_id|string == user_id|string %}
                     deleteMode = true;
                     infoMode = false;
                     submitBtn.innerHTML = "🗑";
+                    submitBtn.classList.add("non-clickable");
                 {% endif %}
             }
             else {
@@ -72,10 +74,17 @@
                 if (!hoverLock) {
                     infoMode = false;
                     deleteMode = false;
+                    submitBtn.classList.remove("non-clickable");
                 }
             }
         };
+
         formElem.onsubmit = function(event) {
+            if (submitBtn.classList.contains("non-clickable")) {
+                event.preventDefault();
+                console.log("Nope.");
+                return;
+            }
             if (submitBtn.classList.contains("rotate")) {
                 event.preventDefault(); 
                 window.location.href = "/dashboard";
@@ -84,7 +93,7 @@
                 event.preventDefault();
                 window.location.href = "/chat/{{ gc_name }}/call";
             }
-            else if (submitBtn.textContent === "🗑") {
+            else if (submitBtn.textContent === "🗑" && deleteMode) {
                 event.preventDefault();
                 if (activeDeleteId) {
                     let deleteForm = document.createElement("form");
@@ -105,12 +114,14 @@
                     if (infoMode) {
                         let name = event.target.dataset.sender;
                         inputElem.value = "Sent by: " + name;
+                        submitBtn.classList.add("non-clickable"); 
                     }
                     if (deleteMode) {
                         activeDeleteId = event.target.dataset.id;
-                        inputElem.value = "Delete message?";
+                        inputElem.value = "Delete message? (click enter if yes)";
                         {% if owner_id|string == user_id|string %}
                             submitBtn.textContent = "🗑";
+                            submitBtn.classList.remove("non-clickable");
                         {% endif %}
                     }
                 }
@@ -121,10 +132,12 @@
                         if (infoMode) {
                             inputElem.value = "info mode";
                             submitBtn.innerHTML = "🔍";
+                            submitBtn.classList.add("non-clickable");
                         } else if (deleteMode) {
                             inputElem.value = "delete mode";
                             submitBtn.innerHTML = "🗑";
                             activeDeleteId = null;
+                            submitBtn.classList.add("non-clickable");
                         }
                     }, 3000);
                 }
