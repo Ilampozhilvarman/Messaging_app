@@ -12,15 +12,13 @@
         .btn-hangup:hover { background: #cc0000; }
     </style>
 </head>
-<body>
-
+<body stlye="display: flex; align-items: center; justify-content: center;">
 <div class="container">
     <h2>Calling in: {{ gc_name }}</h2>
     <div id="status-text" class="status">Connecting to audio channels...</div>
     <a href="/chat/{{ gc_name }}" class="btn-hangup" onclick="return leaveVoiceCall(event)">🛑 Leave Call</a>
 </div>
 <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js"></script>
-
 <script>
     let rtc = {
     localAudioTrack: null,
