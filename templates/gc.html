@@ -39,6 +39,18 @@
         let activeDeleteId = null;
         let resetTimeout = null;  
         let messageElems = document.querySelectorAll(".messages");
+        const channel = new BroadcastChannel("my_app");
+        let anotherTabExists = false;
+        channel.postMessage("are_you_open");
+        channel.onmessage = (event) => {
+            if (event.data === "yes") {
+                anotherTabExists = true;
+                document.body.innerHTML = "<h1>Another tab is already open.</h1>";
+            }
+            if (event.data === "are_you_open") {
+                channel.postMessage("yes");
+            }
+        };
         inputElem.oninput = function(event) {
             let val = inputElem.value;
             if (infoMode || deleteMode) {

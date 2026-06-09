@@ -22,12 +22,23 @@
 <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js"></script>
 
 <script>
-let rtc = {
+    let rtc = {
     localAudioTrack: null,
     client: null
-};
-
-async function initCall() {
+    };
+    const channel = new BroadcastChannel("my_app");
+    let anotherTabExists = false;
+    channel.postMessage("are_you_open");
+    channel.onmessage = (event) => {
+        if (event.data === "yes") {
+            anotherTabExists = true;
+            document.body.innerHTML = "<h1>Another tab is already open.</h1>";
+        }
+        if (event.data === "are_you_open") {
+            channel.postMessage("yes");
+        }
+    };
+    async function initCall() {
     try {
         let response = await fetch('/get-token');
         if (!response.ok) throw new Error("Could not authorize connection.");
@@ -59,14 +70,14 @@ async function initCall() {
         document.getElementById("status-text").innerText = "❌ Connection failed. Check microphone permissions.";
         document.getElementById("status-text").style.color = "#ff3333";
     }
-}
-window.addEventListener("beforeunload", () => {
+    }
+    window.addEventListener("beforeunload", () => {
     if (rtc.localAudioTrack) {
         rtc.localAudioTrack.stop();
         rtc.localAudioTrack.close();
     }
-});
-async function leaveVoiceCall(event) {
+    });
+    async function leaveVoiceCall(event) {
     if (event) event.preventDefault();
     if (rtc.localAudioTrack) {
         rtc.localAudioTrack.stop();
@@ -76,9 +87,9 @@ async function leaveVoiceCall(event) {
         await rtc.client.leave();
     }
     window.location.href = "/chat/{{ gc_name }}";
-}
+    }
 
-window.onload = initCall;
+    window.onload = initCall;
 </script>
 
 </body>
