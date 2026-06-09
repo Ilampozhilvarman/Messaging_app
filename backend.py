@@ -143,7 +143,7 @@ def group_chat(gc_name):
         return redirect(url_for("home"))
     gc = db["group_chats"].find_one({"chat_name": gc_name})
     if not gc:
-        return render_template("index.html")
+        return redirect(url_for("dashboard"))
     if ObjectId(session["user_id"]) not in gc["member_ids"]:
         return "Unauthorized", 403
     session["gc_id"] = str(gc["_id"])
@@ -161,6 +161,8 @@ def group_chat(gc_name):
 def message_sent():
     if "user_id" not in session or "gc_id" not in session:
         return redirect(url_for("home"))
+    if not gc:
+        return redirect(url_for("dashboard"))
     new_message = request.form.get("message")
     chat_id = ObjectId(session["gc_id"])
     gc = db["group_chats"].find_one({"_id": chat_id})
@@ -256,9 +258,6 @@ def delete_gc():
     gc = db["group_chats"].find_one({"_id": ObjectId(session["gc_id"])})
     if not gc or gc["owner_id"] != ObjectId(session["user_id"]):
         return "Unauthorized", 403
-    
-    if not gc:
-        return redirect(url_for("dashboard"))
     
     if gc["owner_id"] != ObjectId(session["user_id"]):
         return render_template("edit_gc.html", gc=gc, error="You are not authorized to delete this group.")
