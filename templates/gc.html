@@ -32,18 +32,25 @@
             let inputElem = document.getElementsByTagName("input")[0];
             let formElem = document.getElementById("input-form");
             let submitBtn = document.getElementsByTagName("button")[0];
+            let commandKey = "?";
             let infoMode = false;
             let hoverLock = false;
+            let deleteMode = false;
             let messageElems = document.querySelectorAll(".messages");
             inputElem.oninput = function(event) {
             if (inputElem.value === "back") {
                 document.getElementsByTagName("button")[0].classList.add("rotate");
             }
-            else if (inputElem.value === "join call") {
+            else if (inputElem.value === commandKey + "call") {
                 document.getElementsByTagName("button")[0].innerHTML = "📞";
             }
-            else if (inputElem.value === "info mode") {
+            else if (inputElem.value === commandKey + "info") {
                 infoMode = true;
+            }
+            else if (inputElem.value === commandKey + "delete") {
+                {% if owner_id|string == user_id|string %}
+                    
+                {% endif %}
             }
             else {
                 document.getElementsByTagName("button")[0].classList.remove("rotate");
