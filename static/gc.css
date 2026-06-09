@@ -160,3 +160,10 @@ button:hover, #admin:hover {
   transform: rotate(-90deg) scale(1.2);
   border: 3px solid white;
 }
+
+.not-clickable {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
