@@ -17,7 +17,7 @@
 <div class="container">
     <h2>Calling in: {{ gc_name }}</h2>
     <div id="status-text" class="status">Connecting to audio channels...</div>
-    <a href="/chat/{{ gc_name }}" class="btn-hangup" onclick="leaveVoiceCall()">🛑 Leave Call</a>
+    <a href="/chat/{{ gc_name }}" class="btn-hangup" onclick="return leaveVoiceCall(event)">🛑 Leave Call</a>
 </div>
 <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js"></script>
 
@@ -33,25 +33,41 @@ async function initCall() {
         if (!response.ok) throw new Error("Could not authorize connection.");
         let data = await response.json();
         rtc.client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-        await rtc.client.join(data.appId, data.channel, data.token, null);
-        rtc.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-        await rtc.client.publish([rtc.localAudioTrack]);
-        document.getElementById("status-text").innerText = "🎙️ Call Connected & Active";
         rtc.client.on("user-published", async (user, mediaType) => {
             await rtc.client.subscribe(user, mediaType);
             if (mediaType === "audio") {
                 user.audioTrack.play();
             }
         });
-        
+        rtc.client.on("user-unpublished", (user) => {
+            console.log("User unpublished audio");
+        });
+        rtc.client.on("user-left", (user) => {
+            console.log("User left");
+        });
+        await rtc.client.join(
+            data.appId,
+            data.channel,
+            data.token,
+            data.uid
+        );
+        rtc.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        await rtc.client.publish([rtc.localAudioTrack]);
+        document.getElementById("status-text").innerText = "🎙️ Call Connected & Active";
     } catch (err) {
         console.error(err);
         document.getElementById("status-text").innerText = "❌ Connection failed. Check microphone permissions.";
         document.getElementById("status-text").style.color = "#ff3333";
     }
 }
-
-async function leaveVoiceCall() {
+window.addEventListener("beforeunload", () => {
+    if (rtc.localAudioTrack) {
+        rtc.localAudioTrack.stop();
+        rtc.localAudioTrack.close();
+    }
+});
+async function leaveVoiceCall(event) {
+    if (event) event.preventDefault();
     if (rtc.localAudioTrack) {
         rtc.localAudioTrack.stop();
         rtc.localAudioTrack.close();
@@ -59,6 +75,7 @@ async function leaveVoiceCall() {
     if (rtc.client) {
         await rtc.client.leave();
     }
+    window.location.href = "/chat/{{ gc_name }}";
 }
 
 window.onload = initCall;

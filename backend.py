@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 import time
 from agora_token_builder import RtcTokenBuilder
+from agora_token_builder.RtcTokenBuilder import Role_Publisher
 
 load_dotenv()
 app = Flask(__name__)
@@ -47,9 +48,14 @@ AGORA_APP_CERTIFICATE = os.getenv("AGORA_APP_CERTIFICATE")
 def get_token():
     if "user_id" not in session or "gc_id" not in session:
         return {"error": "Unauthorized"}, 401
+    gc = db["group_chats"].find_one({"_id": ObjectId(session["gc_id"])})
+    if not gc:
+        return {"error": "Chat not found"}, 404
+    if ObjectId(session["user_id"]) not in gc["member_ids"]:
+        return {"error": "Unauthorized"}, 403
     channel_name = session["gc_id"] 
-    uid = 0
-    role = 1
+    uid = int(str(ObjectId(session["user_id"]))[-8:], 16)
+    role = Role_Publisher
     expiration_time_in_seconds = 3600
     current_timestamp = int(time.time())
     privilege_expired_ts = current_timestamp + expiration_time_in_seconds #
@@ -64,7 +70,8 @@ def get_token():
     return {
         "token": token,
         "channel": channel_name,
-        "appId": AGORA_APP_ID
+        "appId": AGORA_APP_ID,
+        "uid": uid
     }
 
 
@@ -81,8 +88,8 @@ def dashboard():
 
 @app.route("/login", methods=["POST"])
 def log_in():
-    username = request.form.get("username")
-    password = request.form.get("password")
+    username = request.form.get("username", "")
+    password = request.form.get("password", "")
     if 8 > len(username) or len(username) > 16 or len(password) > 16 or len(password) < 8:
         print("username and password must be between 8-16 chars.")
         return render_template("log_in.html", error="Invalid username or password length.")
@@ -124,8 +131,9 @@ def call_room(gc_name):
         return redirect(url_for("home")) 
     gc = db["group_chats"].find_one({"chat_name": gc_name})
     if not gc:
-        print("Gc has not been found.")
         return redirect(url_for("dashboard"))
+    if ObjectId(session["user_id"]) not in gc["member_ids"]:
+        return {"error": "Unauthorized"}, 403
     session["gc_id"] = str(gc["_id"])
     return render_template("call.html", gc_name=gc_name, gc_id=str(gc["_id"]))
 
@@ -136,6 +144,8 @@ def group_chat(gc_name):
     gc = db["group_chats"].find_one({"chat_name": gc_name})
     if not gc:
         return render_template("index.html")
+    if ObjectId(session["user_id"]) not in gc["member_ids"]:
+        return "Unauthorized", 403
     session["gc_id"] = str(gc["_id"])
     owner = gc["owner_id"]
     gc_messages_ordered = list(db["messages"].find({"chat_id": gc["_id"]}).sort("order", 1))
@@ -170,7 +180,8 @@ def new_gc():
     gc_name = request.form.get("gc-name")
     if len(gc_name) > 16 or len(gc_name) < 8:
         return render_template("new_gc.html", error="Group Chat name must be between 8 and 16 characters long.")
-    
+    if "user_id" not in session:
+        return redirect(url_for("home"))
     does_gc_exist_already = db["group_chats"].find_one({"chat_name": gc_name})
     if does_gc_exist_already:
         return render_template("new_gc.html", error="Group chat name already exists.")
@@ -259,6 +270,8 @@ def delete_gc():
 
 @app.route("/delete-user")
 def delete_main_user():
+    if "user_id" not in session:
+        return redirect(url_for("home"))
     user_to_delete = db["users"].find_one({"_id": ObjectId(session["user_id"])})
     user_id = ObjectId(session["user_id"])
     if not user_to_delete:
