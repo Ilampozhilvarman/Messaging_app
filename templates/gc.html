@@ -38,7 +38,7 @@
             let deleteMode = false;
             let messageElems = document.querySelectorAll(".messages");
             inputElem.oninput = function(event) {
-            if (inputElem.value === "back") {
+            if (inputElem.value === commandKey + "back") {
                 document.getElementsByTagName("button")[0].classList.add("rotate");
             }
             else if (inputElem.value === commandKey + "call") {
@@ -49,7 +49,8 @@
             }
             else if (inputElem.value === commandKey + "delete") {
                 {% if owner_id|string == user_id|string %}
-                    
+                    deleteMode = true;
+                    infoMode = false;
                 {% endif %}
             }
             else {
@@ -85,23 +86,18 @@
             };
             messageElems.forEach(elem => {
                 elem.addEventListener("mouseenter", function(event) {
+                    clearTimeout(resetTimeout);
                     if (infoMode) {
-                        clearTimeout(resetTimeout);
                         let name = event.target.dataset.sender;
-                        activeDeleteId = event.target.dataset.id;
                         inputElem.value = "Sent by: " + name;
+                    }
+
+                    if (deleteMode) {
+                        activeDeleteId = event.target.dataset.id;
+                        inputElem.value = "Delete message?";
                         {% if owner_id|string == user_id|string %}
                             submitBtn.textContent = "🗑";
                         {% endif %}
-                    }
-                });
-                elem.addEventListener("mouseleave", function(event) {
-                    if (infoMode) {
-                        resetTimeout = setTimeout(function() {
-                            inputElem.value = "info mode";
-                            submitBtn.innerHTML = "&uarr;";
-                            activeDeleteId = null;
-                        }, 5000);
                     }
                 });
             });
