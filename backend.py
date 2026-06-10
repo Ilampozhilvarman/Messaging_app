@@ -161,11 +161,11 @@ def group_chat(gc_name):
 def message_sent():
     if "user_id" not in session or "gc_id" not in session:
         return redirect(url_for("home"))
-    if not gc:
-        return redirect(url_for("dashboard"))
     new_message = request.form.get("message")
     chat_id = ObjectId(session["gc_id"])
     gc = db["group_chats"].find_one({"_id": chat_id})
+    if not gc:
+        return redirect(url_for("dashboard"))
     owner = gc["owner_id"]
     if new_message.replace(" ", "") == "":
         return redirect(url_for("group_chat", gc_name=gc["chat_name"], owner_id=owner))
