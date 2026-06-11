@@ -299,7 +299,6 @@ def del_message(message_id):
     print(f"Message {message_id} was deleted by owner.")
     return redirect(url_for("group_chat", gc_name=gc["chat_name"]))
 
-
 if __name__ == "__main__":
     app.run(debug=True, port=8080)
 
