@@ -224,7 +224,7 @@ def add_user():
     
     db["group_chats"].update_one({"_id": chat_id}, {"$push": {"member_ids": new_user["_id"]}})
     print("User has been added.")
-    return redirect(url_for("go_to_edit_page"))
+    return render_template("edit_gc.html", gc=gc, error=f"User {new_user_name} has been added.")
 
 @app.route("/del-user", methods=["POST"])
 def del_user():
@@ -249,7 +249,7 @@ def del_user():
         return render_template("edit_gc.html", gc=gc, error="User is not a member of this chat.")
     db["group_chats"].update_one({"_id": chat_id}, {"$pull": {"member_ids": new_user["_id"]}})
     print("User has been deleted.")
-    return redirect(url_for("go_to_edit_page"))
+    return render_template("edit_gc.html", gc=gc, error=f"User {new_user_name} has been removed.")
 
 @app.route("/delete-gc", methods=["POST"])
 def delete_gc():
